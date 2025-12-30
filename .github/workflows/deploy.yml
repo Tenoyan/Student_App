@@ -1,0 +1,48 @@
+name: Build, Push Docker & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build React image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest ./frontend
+
+      - name: Build Laravel image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest ./backend
+
+      - name: Push React image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+
+      - name: Push Laravel image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ${{ secrets.SERVER_PATH }}
+            git reset --hard
+            git clean -fd
+            git pull origin main
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+            docker compose down
+            docker compose up -d
