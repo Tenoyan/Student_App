@@ -20,10 +20,10 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build React image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest ./student-frontend
+        run: docker build -f student-frontend/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest student-frontend
 
       - name: Build Laravel image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest ./student-app
+        run: docker build -f student-app/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest student-app
 
       - name: Push React image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
