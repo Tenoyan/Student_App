@@ -25,6 +25,13 @@ jobs:
       - name: Build Laravel image
         run: docker build -f student-app/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest student-app
 
+      - name: Build MySQL image
+        run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
+
+      - name: Push MySQL image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
+
+
       - name: Push React image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
 
@@ -44,5 +51,6 @@ jobs:
             git pull origin main
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+            docker pull mysql:8.0
             docker compose down
             docker compose up -d

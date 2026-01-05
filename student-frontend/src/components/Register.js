@@ -46,7 +46,7 @@ const Register = () => {
       <button type="submit">Register</button>
       <button 
         type="button" 
-        className="back-btn"
+        className="back-btn1"
         onClick={() => navigate("/login")}
       >
         Back to Login
