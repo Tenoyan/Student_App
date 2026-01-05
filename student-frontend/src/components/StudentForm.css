@@ -1,0 +1,88 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f4f8;
+}
+
+.student-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.student-form {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.student-form input[type="text"],
+.student-form input[type="tel"],
+.student-form input[type="file"] {
+  padding: 12px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+  
+}
+
+.student-form input[type="text"]:focus,
+.student-form input[type="tel"]:focus,
+.student-form input[type="file"]:focus {
+  outline: none;
+  border-color: #3b82f6; /* blue border on focus */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.submit {
+  padding: 12px 15px;
+  background-color: #3b82f6; /* blue */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit:hover {
+  background-color: #2563eb; /* darker blue on hover */
+}
+
+.form-title {
+  text-align: center;
+  color: #1e40af;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.form-message {
+  text-align: center;
+  color: green;
+  font-weight: 500;
+}
+
+.back-bttn {
+  /* background-color: #1e40af; */
+  color: black;
+  /* padding: 8px 14px; */
+  width: 55px;;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* .back-btn:hover {
+  color: #1e3a8a;
+} */
+
+
+

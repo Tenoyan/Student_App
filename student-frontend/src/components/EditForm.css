@@ -1,0 +1,60 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f4f8;
+}
+
+.student-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.student-form label {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.student-form input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cfe0ff;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #0066ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.submit-btn:hover {
+  background: #0052cc;
+}
+
+.back-btn {
+  width: 20%;
+  padding: 12px;
+  background: #aaa;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.preview-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  margin: auto;
+}
