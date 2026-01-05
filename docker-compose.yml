@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   frontend:
-    build: ./frontend
+    build: ./student-frontend
     container_name: react_app
     ports:
       - "80:80"
@@ -10,14 +10,14 @@ services:
       - backend
 
   backend:
-    build: ./backend
+    build: ./student-app
     container_name: Laravel
     env_file:
-      - ./backend/.env
+      - ./student-app/.env
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/.env:/var/www/.env
+      - ./student-app/.env:/var/www/.env
     depends_on:
       - mysql
 
@@ -25,9 +25,9 @@ services:
     image: mysql:8.0
     container_name: mysql_db
     environment:
-      MYSQL_DATABASE: mydb
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: student_app
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Sumo@3396
+      MYSQL_ROOT_PASSWORD: Sumo@3396
     volumes:
       - ./mysql/data:/var/lib/mysql
