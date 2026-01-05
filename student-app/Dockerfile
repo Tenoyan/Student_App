@@ -43,5 +43,5 @@ RUN chown -R www-data:www-data /var/www \
 RUN composer dump-autoload --optimize \
     && php artisan key:generate || true
 
-EXPOSE 9000
+EXPOSE 8000
 CMD ["php-fpm"]
