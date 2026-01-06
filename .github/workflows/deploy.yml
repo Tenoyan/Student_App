@@ -84,6 +84,13 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest -f student-app/Dockerfile student-app
 
+      - name: Build MySQL image
+        run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
+
+      - name: Push MySQL image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
+
+
       - name: Push React image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
 
