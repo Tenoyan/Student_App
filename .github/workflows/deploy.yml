@@ -60,7 +60,7 @@ name: Build, Push Docker Images & Deploy
 on:
   push:
     branches:
-      - main
+      - Ten
 
 jobs:
   deploy:
