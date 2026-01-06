@@ -61,7 +61,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: mysql_db
+    container_name: mysql
     environment:
       MYSQL_DATABASE: student_app
       MYSQL_ROOT_PASSWORD: Sumo@3396
