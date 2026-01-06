@@ -1,35 +1,79 @@
+# version: "3.8"
+
+# services:
+#   frontend:
+#     build: ./student-frontend
+#     container_name: react_app
+#     ports:
+#       - "80:80"
+#     depends_on:
+#       - backend
+
+#   backend:
+#     build: ./student-app
+#     container_name: Laravel
+#     env_file:
+#       - ./student-app/.env
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./student-app/.env:/var/www/.env
+#     depends_on:
+#       - mysql
+
+#   mysql:
+#     image: mysql:8.0
+#     container_name: mysql_db
+#     environment:
+#       MYSQL_DATABASE: student_app
+#       # MYSQL_USER: root
+#       # MYSQL_PASSWORD: Sumo@3396
+#       MYSQL_ROOT_PASSWORD: Sumo@3396
+#     ports:
+#       - "3307:3306"
+#     volumes:
+#       - ./mysql/data:/var/lib/mysql
+
 version: "3.8"
 
 services:
   frontend:
-    build: ./student-frontend
+    image: nktenoyan/react_app:latest
     container_name: react_app
     ports:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - app-network
 
   backend:
-    build: ./student-app
-    container_name: Laravel
+    image: nktenoyan/laravel_app:latest
+    container_name: laravel
     env_file:
       - ./student-app/.env
     ports:
       - "8000:8000"
-    volumes:
-      - ./student-app/.env:/var/www/.env
     depends_on:
       - mysql
+    networks:
+      - app-network
 
   mysql:
     image: mysql:8.0
     container_name: mysql_db
     environment:
       MYSQL_DATABASE: student_app
-      # MYSQL_USER: root
-      # MYSQL_PASSWORD: Sumo@3396
       MYSQL_ROOT_PASSWORD: Sumo@3396
     ports:
       - "3307:3306"
     volumes:
-      - ./mysql/data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:

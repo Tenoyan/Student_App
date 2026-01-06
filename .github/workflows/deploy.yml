@@ -1,4 +1,61 @@
-name: Build, Push Docker & Deploy
+# name: Build, Push Docker & Deploy
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Build React image
+#         run: docker build -f student-frontend/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest student-frontend
+
+#       - name: Build Laravel image
+#         run: docker build -f student-app/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest student-app
+
+#       - name: Build MySQL image
+#         run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
+
+#       - name: Push MySQL image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
+
+
+#       - name: Push React image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+
+#       - name: Push Laravel image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+
+#       - name: Deploy to Server via SSH
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             cd ${{ secrets.SERVER_PATH }}
+#             git reset --hard
+#             git clean -fd
+#             git pull origin main
+#             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+#             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+#             docker pull mysql:8.0
+#             docker compose down
+#             docker compose up -d
+
+name: Build, Push Docker Images & Deploy
 
 on:
   push:
@@ -10,27 +67,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build React image
-        run: docker build -f student-frontend/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest student-frontend
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest -f student-frontend/Dockerfile student-frontend
 
       - name: Build Laravel image
-        run: docker build -f student-app/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest student-app
-
-      - name: Build MySQL image
-        run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
-
-      - name: Push MySQL image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
-
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest -f student-app/Dockerfile student-app
 
       - name: Push React image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
@@ -38,7 +90,7 @@ jobs:
       - name: Push Laravel image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
 
-      - name: Deploy to Server via SSH
+      - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -46,11 +98,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd ${{ secrets.SERVER_PATH }}
-            git reset --hard
-            git clean -fd
             git pull origin main
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
             docker pull mysql:8.0
             docker compose down
             docker compose up -d
+
