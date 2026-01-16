@@ -379,16 +379,32 @@ jobs:
 
       - name: Run container health checks
         run: |
-          echo "Running health checks..."
-          
+          Write-Host "Running health checks..."
+
           # Check MySQL health
-          docker exec sql_db mysqladmin ping -h localhost --silent && echo "✓ MySQL is healthy" || echo "✗ MySQL health check failed"
-          
+          try {
+              docker exec sql_db mysqladmin ping -h localhost --silent | Out-Null
+              Write-Host "✓ MySQL is healthy"
+          } catch {
+              Write-Host "✗ MySQL health check failed"
+          }
+
           # Check Laravel container
-          docker exec laravels php artisan --version && echo "✓ Laravel is working" || echo "✗ Laravel check failed"
-          
-          # Check if containers can communicate
-          docker exec laravels php artisan tinker --execute="try { DB::table('users')->count(); echo '✓ Database query successful'; } catch (Exception \$e) { echo '✗ Database query failed: ' . \$e->getMessage(); }"
+          try {
+              docker exec laravels php artisan --version | Out-Null
+              Write-Host "✓ Laravel is working"
+          } catch {
+              Write-Host "✗ Laravel check failed"
+          }
+
+          # Check if Laravel can query database
+          try {
+              $command = 'try { DB::table("users")->count(); Write-Host "✓ Database query successful" } catch (Exception $e) { Write-Host "✗ Database query failed: $($e.Message)" }'
+              docker exec laravels php artisan tinker --execute="$command"
+          } catch {
+              Write-Host "✗ Database query execution failed"
+          }
+
 
       - name: Show container logs
         if: failure()
