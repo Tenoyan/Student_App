@@ -65,7 +65,7 @@ jobs:
           docker build -t ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest \
           -f student-mysql/Dockerfile student-mysql
 
-      - name: Run containers with docker-compose (stack: first)
+      - name: Run containers with docker-compose stack first
         run: |
           echo "Starting all containers with stack name 'first'..."
           docker compose -p first up -d
