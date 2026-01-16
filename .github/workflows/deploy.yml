@@ -65,10 +65,10 @@ jobs:
           docker build -t ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest \
           -f student-mysql/Dockerfile student-mysql
 
-      - name: Run containers with docker-compose stack first
+      - name: Run containers with docker-compose stack first-application
         run: |
-          echo "Starting all containers with stack name 'first'..."
-          docker compose -p first up -d
+          echo "Starting all containers with stack name 'first-application'..."
+          docker compose -p first-application up -d
           
           # Show container status
           echo "Container status:"
@@ -126,7 +126,7 @@ jobs:
           echo "Final container status:"
           docker ps
           
-          echo "All containers are running successfully in stack 'first'!"
+          echo "All containers are running successfully in stack 'first-application'!"
 
       - name: Run container health checks
         run: |
@@ -151,7 +151,7 @@ jobs:
           echo "=== React Logs ==="
           docker logs react --tail 50
           echo "=== Docker Compose Stack Status ==="
-          docker compose -p first ps
+          docker compose -p first-application ps
 
       - name: Login to Docker Hub
         if: github.event_name == 'push'
@@ -181,6 +181,6 @@ jobs:
       - name: Cleanup containers
         if: always()
         run: |
-          echo "Cleaning up containers from stack 'first'..."
-          docker compose -p first down -v
+          echo "Cleaning up containers from stack 'first-application'..."
+          docker compose -p first-application down -v
           echo "Cleanup completed"

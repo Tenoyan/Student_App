@@ -42,7 +42,7 @@
 #
 
 
-name: first
+name: first-application
 services:
   frontend:
     image: nktenoyan/react_app:latest
