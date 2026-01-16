@@ -205,7 +205,7 @@ env:
 
 jobs:
   build-test-run:
-    runs-on: [ubuntu-latest]  # Will use self-hosted if available, otherwise GitHub-hosted
+    runs-on: self-hosted  # Will use self-hosted if available, otherwise GitHub-hosted
     
     steps:
       - name: Checkout source code
