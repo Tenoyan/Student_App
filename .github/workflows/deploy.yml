@@ -216,9 +216,9 @@ jobs:
 
       - name: Create .env file for testing
         working-directory: ./student-app
-        shell: bash
+        shell: pwsh
         run: |
-          cat > .env << EOF
+          Set-Content -Path ".\student-app\.env" -Value @"
           APP_NAME=Laravel
           APP_ENV=testing
           APP_KEY=
@@ -238,7 +238,7 @@ jobs:
           CACHE_STORE=database
           BROADCAST_CONNECTION=log
           FILESYSTEM_DISK=local
-          EOF
+          "@
 
       - name: Build React image
         run: |
