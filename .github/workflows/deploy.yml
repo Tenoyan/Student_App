@@ -255,19 +255,35 @@ jobs:
           docker tag $env:DOCKERHUB_USERNAME/react_app:latest $env:DOCKERHUB_USERNAME/react_app:latest
 
 
+      # - name: Build Laravel image
+      #   run: |
+      #     docker build -t ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest \
+      #     -f student-app/Dockerfile student-app
+      #     # Tag with the name docker-compose.yml expects
+      #     docker tag ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest nktenoyan/laravel_app:latest
+
       - name: Build Laravel image
+        working-directory: ${{ github.workspace }}
+        shell: powershell
         run: |
-          docker build -t ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest \
-          -f student-app/Dockerfile student-app
-          # Tag with the name docker-compose.yml expects
-          docker tag ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest nktenoyan/laravel_app:latest
+          docker build -t $env:DOCKERHUB_USERNAME/laravel_app:latest -f .\student-app\Dockerfile .\student-app
+          docker tag $env:DOCKERHUB_USERNAME/laravel_app:latest $env:DOCKERHUB_USERNAME/laravel_app:latest
+
+
+      # - name: Build MySQL image
+      #   run: |
+      #     docker build -t ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest \
+      #     -f student-mysql/Dockerfile student-mysql
+      #     # Tag with the name docker-compose.yml expects
+      #     docker tag ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest nktenoyan/mysql_app:latest
 
       - name: Build MySQL image
+        working-directory: ${{ github.workspace }}
+        shell: powershell
         run: |
-          docker build -t ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest \
-          -f student-mysql/Dockerfile student-mysql
-          # Tag with the name docker-compose.yml expects
-          docker tag ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest nktenoyan/mysql_app:latest
+          docker build -t $env:DOCKERHUB_USERNAME/mysql_app:latest -f .\student-mysql\Dockerfile .\student-mysql
+          docker tag $env:DOCKERHUB_USERNAME/mysql_app:latest $env:DOCKERHUB_USERNAME/mysql_app:latest
+
 
       - name: Run containers automatically with docker-compose stack first-application
         run: |
