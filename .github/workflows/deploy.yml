@@ -270,9 +270,10 @@ jobs:
           echo ""
           echo "✓✓✓ CONFIRMED: All containers are running in stack 'first-application' ✓✓✓"
 
-      - name: Cleanup containers
-        if: always()
-        run: |
-          echo "Cleaning up containers from stack 'first-application'..."
-          docker compose -p first-application down -v
-          echo "Cleanup completed"
+      # Cleanup step removed - containers will remain running
+      # - name: Cleanup containers
+      #   if: always()
+      #   run: |
+      #     echo "Cleaning up containers from stack 'first-application'..."
+      #     docker compose -p first-application down -v
+      #     echo "Cleanup completed"
