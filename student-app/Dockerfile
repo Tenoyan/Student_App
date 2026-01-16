@@ -65,6 +65,8 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    libcurl4-openssl-dev \
+    ca-certificates \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
@@ -73,38 +75,32 @@ RUN apt-get update && apt-get install -y \
         xml \
         ctype \
         fileinfo \
-        zip
+        zip \
+        curl
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copy composer files first for caching
+# Copy composer files
 COPY composer.json composer.lock ./
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Copy application code
-COPY . .
-
-# Copy .env if missing
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 /var/www
 
-# Generate key if missing
+# Install PHP dependencies with unlimited memory
+RUN php -d memory_limit=-1 /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction
+
+# Copy application source
+COPY . .
+
+# Create .env if missing
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Generate key
 RUN php artisan key:generate || true
 
-# Optional: cache config/routes/views for faster load
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
-
 EXPOSE 8000
-
-# Dev-friendly CMD (change in production)
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
