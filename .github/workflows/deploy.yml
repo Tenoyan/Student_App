@@ -349,7 +349,7 @@ jobs:
 
           # Test database connection
           try {
-              docker exec laravels php artisan tinker --execute="DB::connection()->getPdo(); Write-Host 'Database connection successful!';"
+              docker exec laravels php artisan tinker --execute='DB::connection()->getPdo(); echo "Database connection successful!";'
           } catch {
               Write-Host "Database connection test failed"
               exit 1
