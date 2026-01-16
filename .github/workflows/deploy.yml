@@ -359,7 +359,7 @@ jobs:
           Start-Sleep -Seconds 5
           try {
               $reactResponse = Invoke-WebRequest -Uri "http://localhost:80" -UseBasicParsing
-              Write-Host "React app status: $($reactResponse.StatusCode)"
+              Write-Host ("React app status: " + $reactResponse.StatusCode)
           } catch {
               Write-Host "React app not responding"
           }
@@ -367,7 +367,7 @@ jobs:
           Start-Sleep -Seconds 5
           try {
               $laravelResponse = Invoke-WebRequest -Uri "http://localhost:8000" -UseBasicParsing
-              Write-Host "Laravel API status: $($laravelResponse.StatusCode)"
+              Write-Host ("Laravel API status: " + $laravelResponse.StatusCode)
           } catch {
               Write-Host "Laravel API not responding"
           }
