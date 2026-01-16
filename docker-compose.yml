@@ -42,8 +42,6 @@
 #
 
 
-version: "3.8"
-
 services:
   frontend:
     image: nktenoyan/react_app:latest
@@ -64,7 +62,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -81,6 +80,11 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pSumo@3396"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mysql_data:
