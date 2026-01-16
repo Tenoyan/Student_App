@@ -399,7 +399,8 @@ jobs:
 
           # Check if Laravel can query database
           try {
-              $phpCommand = 'try { echo DB::table("users")->count() . "\nDatabase query: OK"; } catch (Exception $e) { echo "Database query: FAIL"; }'
+              # Use single quotes outside PowerShell and escape inner double quotes for PHP
+              $phpCommand = 'try { echo DB::table(\"users\")->count() . \"`nDatabase query: OK\"; } catch (Exception $e) { echo \"Database query: FAIL\"; }'
               docker exec laravels php artisan tinker --execute="$phpCommand"
           } catch {
               Write-Host "Database query execution failed"
