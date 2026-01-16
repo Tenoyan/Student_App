@@ -70,7 +70,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: mysql
+    container_name: mysql_db
     restart: always
     environment:
       MYSQL_DATABASE: student_app
