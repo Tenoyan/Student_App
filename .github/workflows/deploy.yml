@@ -1,3 +1,192 @@
+# name: Build, Push Docker & Deploy
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Build React image
+#         run: docker build -f student-frontend/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest student-frontend
+
+#       - name: Build Laravel image
+#         run: docker build -f student-app/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest student-app
+
+#       - name: Build MySQL image
+#         run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
+
+#       - name: Push MySQL image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
+
+
+#       - name: Push React image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+
+#       - name: Push Laravel image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+
+#       - name: Deploy to Server via SSH
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             cd ${{ secrets.SERVER_PATH }}
+#             git reset --hard
+#             git clean -fd
+#             git pull origin main
+#             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+#             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+#             docker pull mysql:8.0
+#             docker compose down
+#             docker compose up -d
+
+
+# 
+# 
+# 
+# 
+# 
+
+
+# name: Build, Push Docker Images & Deploy
+
+# on:
+#   push:
+#     branches:
+#       - Ten
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout source code
+#         uses: actions/checkout@v4
+
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Build React image
+#         run: |
+#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest -f student-frontend/Dockerfile student-frontend
+
+#       - name: Build Laravel image
+#         run: |
+#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest -f student-app/Dockerfile student-app
+
+#       - name: Build MySQL image
+#         run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
+
+#       - name: Push MySQL image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
+
+
+#       - name: Push React image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+
+#       - name: Push Laravel image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+
+#       - name: Deploy to Server
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             set -e
+#             cd ${{ secrets.SERVER_PATH }}
+#             git pull origin Ten
+#             docker compose pull --no-build
+#             docker compose down
+#             docker compose up -d
+
+
+# name: Build, Push Docker Images & Deploy
+
+# on:
+#   push:
+#     branches:
+#       - Ten
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout source code
+#         uses: actions/checkout@v4
+
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Build React image
+#         run: |
+#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest \
+#           -f student-frontend/Dockerfile student-frontend
+
+#       - name: Build Laravel image
+#         run: |
+#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest \
+#           -f student-app/Dockerfile student-app
+
+#       - name: Build MySQL image
+#         run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
+
+#       - name: Push MySQL image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
+
+
+#       - name: Push React image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+
+#       - name: Push Laravel image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+
+#       - name: Deploy to Server
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           # host: ${{ secrets.SERVER_IP }}
+#           # username: ${{ secrets.SERVER_USER }}
+#           # key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             set -e
+            
+
+#             git pull origin Ten
+
+#             docker compose pull
+#             docker compose down
+#             docker compose up -d
+
+#             docker exec laravel php artisan key:generate --force || true
+#             docker exec laravel php artisan migrate --force
+#             docker exec laravel php artisan config:clear
+#             docker exec laravel php artisan cache:clear
+
+
+
 name: Build, Test & Run Containers in CI/CD
 
 on:
@@ -37,7 +226,7 @@ jobs:
           APP_URL=http://localhost
           
           DB_CONNECTION=mysql
-          DB_HOST=mysql
+          DB_HOST=sql_db
           DB_PORT=3306
           DB_DATABASE=student_app
           DB_USERNAME=root
@@ -119,11 +308,11 @@ jobs:
           echo ""
           echo "=== Container Labels (Project Name) ==="
           echo "Laravel container project label:"
-          docker inspect laravel 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
+          docker inspect laravels 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
           echo "MySQL container project label:"
-          docker inspect mysql_db 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
+          docker inspect sql_db 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
           echo "React container project label:"
-          docker inspect react 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
+          docker inspect reacts 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
           echo ""
           echo "=== Docker Compose Projects ==="
           docker compose ls 2>/dev/null || echo "Listing compose projects..."
@@ -136,7 +325,7 @@ jobs:
           echo "=========================================="
           
           # Verify containers are actually running
-          if ! docker ps | grep -q "mysql_db\|laravel\|react"; then
+          if ! docker ps | grep -q "sql_db\|laravel\|react"; then
             echo "ERROR: Containers are not running!"
             docker compose -p first-application ps
             docker compose -p first-application logs
@@ -146,9 +335,9 @@ jobs:
           
           # Wait for MySQL to be ready
           echo "Waiting for MySQL to be ready..."
-          timeout 120 bash -c 'until docker exec mysql_db mysqladmin ping -h localhost --silent; do sleep 2; done' || {
+          timeout 120 bash -c 'until docker exec sql_db mysqladmin ping -h localhost --silent; do sleep 2; done' || {
             echo "MySQL failed to start"
-            docker logs mysql_db
+            docker logs sql_db
             exit 1
           }
           echo "MySQL is ready!"
@@ -159,17 +348,17 @@ jobs:
           
           # Check Laravel container logs
           echo "Laravel container logs:"
-          docker logs laravel --tail 20
+          docker logs laravels --tail 20
           
           # Run Laravel setup commands
-          echo "Running Laravel setup commands..."
-          docker exec laravel php artisan key:generate --force || true
-          docker exec laravel php artisan config:clear || true
-          docker exec laravel php artisan cache:clear || true
+          echo "Running Laravels setup commands..."
+          docker exec laravels php artisan key:generate --force || true
+          docker exec laravels php artisan config:clear || true
+          docker exec laravels php artisan cache:clear || true
           
           # Run migrations
           echo "Running database migrations..."
-          docker exec laravel php artisan migrate --force || {
+          docker exec laravels php artisan migrate --force || {
             echo "Migration failed"
             docker logs laravel --tail 50
             exit 1
@@ -178,7 +367,7 @@ jobs:
           
           # Test database connection
           echo "Testing database connection..."
-          docker exec laravel php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection successful!';" || {
+          docker exec laravels php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection successful!';" || {
             echo "Database connection test failed"
             exit 1
           }
@@ -203,23 +392,23 @@ jobs:
           echo "Running health checks..."
           
           # Check MySQL health
-          docker exec mysql_db mysqladmin ping -h localhost --silent && echo "✓ MySQL is healthy" || echo "✗ MySQL health check failed"
+          docker exec sql_db mysqladmin ping -h localhost --silent && echo "✓ MySQL is healthy" || echo "✗ MySQL health check failed"
           
           # Check Laravel container
-          docker exec laravel php artisan --version && echo "✓ Laravel is working" || echo "✗ Laravel check failed"
+          docker exec laravels php artisan --version && echo "✓ Laravel is working" || echo "✗ Laravel check failed"
           
           # Check if containers can communicate
-          docker exec laravel php artisan tinker --execute="try { DB::table('users')->count(); echo '✓ Database query successful'; } catch (Exception \$e) { echo '✗ Database query failed: ' . \$e->getMessage(); }"
+          docker exec laravels php artisan tinker --execute="try { DB::table('users')->count(); echo '✓ Database query successful'; } catch (Exception \$e) { echo '✗ Database query failed: ' . \$e->getMessage(); }"
 
       - name: Show container logs
         if: failure()
         run: |
           echo "=== MySQL Logs ==="
-          docker logs mysql_db --tail 50
+          docker logs sql_db --tail 50
           echo "=== Laravel Logs ==="
-          docker logs laravel --tail 50
+          docker logs laravels --tail 50
           echo "=== React Logs ==="
-          docker logs react --tail 50
+          docker logs reacts --tail 50
           echo "=== Docker Compose Stack Status ==="
           docker compose -p first-application ps
 
@@ -245,7 +434,7 @@ jobs:
       - name: Push MySQL image to Docker Hub
         if: github.event_name == 'push'
         run: |
-          docker push ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest
+          docker push ${{ env.DOCKERHUB_USERNAME }}/sql_app:latest
           echo "MySQL image pushed successfully"
 
       - name: Keep containers running for verification
@@ -273,9 +462,9 @@ jobs:
           echo "Volumes: first-application_mysql_data"
           echo ""
           echo "=== Verifying Stack Name in Container Labels ==="
-          docker inspect laravel 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
-          docker inspect mysql_db 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
-          docker inspect react 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
+          docker inspect laravels 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
+          docker inspect sql_db 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
+          docker inspect reacts 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
           echo ""
           echo "✓✓✓ CONFIRMED: All containers are running in stack 'first-application' ✓✓✓"
 

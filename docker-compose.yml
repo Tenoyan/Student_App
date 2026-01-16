@@ -42,57 +42,52 @@
 #
 
 
-name: first-application
-services:
-  frontend:
-    image: nktenoyan/react_app:latest
-    container_name: react
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    networks:
-      - app-network
+# version: "3.8"
 
-  backend:
-    image: nktenoyan/laravel_app:latest
-    container_name: laravel
-    restart: always
-    env_file:
-      - ./student-app/.env
-    ports:
-      - "8000:8000"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - app-network
+# services:
+#   frontend:
+#     image: nktenoyan/react_app:latest
+#     container_name: react
+#     ports:
+#       - "80:80"
+#     depends_on:
+#       - backend
+#     networks:
+#       - app-network
 
-  mysql:
-    image: nktenoyan/mysql_app:latest
-    container_name: mysql_db
-    restart: always
-    environment:
-      MYSQL_DATABASE: student_app
-      MYSQL_ROOT_PASSWORD: Sumo@3396
-    ports:
-      - "3307:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pSumo@3396"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+#   backend:
+#     image: nktenoyan/laravel_app:latest
+#     container_name: laravel
+#     restart: always
+#     env_file:
+#       - ./student-app/.env
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - mysql
+#     networks:
+#       - app-network
 
-volumes:
-  mysql_data:
+#   mysql:
+#     image: mysql:8.0
+#     container_name: mysql_db
+#     restart: always
+#     environment:
+#       MYSQL_DATABASE: student_app
+#       MYSQL_ROOT_PASSWORD: Sumo@3396
+#     ports:
+#       - "3307:3306"
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+#     networks:
+#       - app-network
 
-networks:
-  app-network:
-    driver: bridge
+# volumes:
+#   mysql_data:
+
+# networks:
+#   app-network:
+#     driver: bridge
 
 
 # version: "3.8"
@@ -145,3 +140,57 @@ networks:
 # networks:
 #   app-network:
 #     driver: bridge
+
+
+
+name: first-application
+services:
+  frontend:
+    image: nktenoyan/react_app:latest
+    container_name: reacts
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    image: nktenoyan/laravel_app:latest
+    container_name: laravels
+    restart: always
+    env_file:
+      - ./student-app/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  mysql:
+    image: nktenoyan/mysql_app:latest
+    container_name: sql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: student_app
+      MYSQL_ROOT_PASSWORD: Sumo@3396
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pSumo@3396"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
