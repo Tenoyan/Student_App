@@ -287,21 +287,21 @@ jobs:
 
       - name: Run containers automatically with docker-compose stack first-application
         run: |
-          Write-Host "=========================================="
-          Write-Host "AUTOMATIC CONTAINER STARTUP - CI/CD Pipeline"
-          Write-Host "Stack Name: first-application"
+          Write-Host '=========================================='
+          Write-Host 'AUTOMATIC CONTAINER STARTUP - CI/CD Pipeline'
+          Write-Host 'Stack Name: first-application'
 
           # Verify images
-          Write-Host "Verifying images..."
+          Write-Host 'Verifying images...'
           docker images | Select-String "react_app|laravel_app|mysql_app"
 
           # Start containers
-          Write-Host "Starting containers..."
+          Write-Host 'Starting containers...'
           try {
               docker compose -p first-application up -d
-              Write-Host "✓ Containers started successfully"
+              Write-Host '✓ Containers started successfully'
           } catch {
-              Write-Host "Failed to start containers"
+              Write-Host 'Failed to start containers'
               docker compose -p first-application logs
               exit 1
           }
@@ -312,19 +312,19 @@ jobs:
           docker ps -a
 
           # Wait for MySQL
-          Write-Host "Waiting for MySQL..."
+          Write-Host 'Waiting for MySQL...'
           $maxRetries = 60
           $retry = 0
           while ($retry -lt $maxRetries) {
               try {
                   docker exec sql_db mysqladmin ping -h localhost | Out-Null
-                  Write-Host "MySQL is ready!"
+                  Write-Host 'MySQL is ready!'
                   break
               } catch {
                   Start-Sleep -Seconds 2
                   $retry++
                   if ($retry -eq $maxRetries) {
-                      Write-Host "MySQL failed to start"
+                      Write-Host 'MySQL failed to start'
                       docker logs sql_db
                       exit 1
                   }
@@ -339,9 +339,9 @@ jobs:
           # Run migrations
           try {
               docker exec laravels php artisan migrate --force
-              Write-Host "Migrations completed successfully!"
+              Write-Host 'Migrations completed successfully!'
           } catch {
-              Write-Host "Migration failed"
+              Write-Host 'Migration failed'
               docker logs laravels
               exit 1
           }
@@ -350,7 +350,7 @@ jobs:
           try {
               docker exec laravels php artisan tinker --execute='DB::connection()->getPdo(); Write-Host "Database connection successful!"'
           } catch {
-              Write-Host "Database connection test failed"
+              Write-Host 'Database connection test failed'
               exit 1
           }
 
@@ -358,17 +358,17 @@ jobs:
           Start-Sleep -Seconds 5
           try {
               $reactResponse = Invoke-WebRequest -Uri 'http://localhost:80' -UseBasicParsing
-              Write-Host ("React app status: " + $reactResponse.StatusCode)
+              Write-Host ('React app status: ' + $reactResponse.StatusCode)
           } catch {
-              Write-Host "React app not responding"
+              Write-Host 'React app not responding'
           }
 
           Start-Sleep -Seconds 5
           try {
               $laravelResponse = Invoke-WebRequest -Uri 'http://localhost:8000' -UseBasicParsing
-              Write-Host ("Laravel API status: " + $laravelResponse.StatusCode)
+              Write-Host ('Laravel API status: ' + $laravelResponse.StatusCode)
           } catch {
-              Write-Host "Laravel API not responding"
+              Write-Host 'Laravel API not responding'
           }
 
           # Final container status
