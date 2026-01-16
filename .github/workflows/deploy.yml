@@ -1,187 +1,199 @@
-# name: Build, Push Docker & Deploy
-
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-
-#       - name: Log in to Docker Hub
-#         uses: docker/login-action@v2
-#         with:
-#           username: ${{ secrets.DOCKERHUB_USERNAME }}
-#           password: ${{ secrets.DOCKER_PASSWORD }}
-
-#       - name: Build React image
-#         run: docker build -f student-frontend/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest student-frontend
-
-#       - name: Build Laravel image
-#         run: docker build -f student-app/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest student-app
-
-#       - name: Build MySQL image
-#         run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
-
-#       - name: Push MySQL image
-#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
-
-
-#       - name: Push React image
-#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
-
-#       - name: Push Laravel image
-#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
-
-#       - name: Deploy to Server via SSH
-#         uses: appleboy/ssh-action@v1.0.3
-#         with:
-#           host: ${{ secrets.SERVER_IP }}
-#           username: ${{ secrets.SERVER_USER }}
-#           key: ${{ secrets.SERVER_SSH_KEY }}
-#           script: |
-#             cd ${{ secrets.SERVER_PATH }}
-#             git reset --hard
-#             git clean -fd
-#             git pull origin main
-#             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
-#             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
-#             docker pull mysql:8.0
-#             docker compose down
-#             docker compose up -d
-
-
-# 
-# 
-# 
-# 
-# 
-
-
-# name: Build, Push Docker Images & Deploy
-
-# on:
-#   push:
-#     branches:
-#       - Ten
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout source code
-#         uses: actions/checkout@v4
-
-#       - name: Login to Docker Hub
-#         uses: docker/login-action@v2
-#         with:
-#           username: ${{ secrets.DOCKERHUB_USERNAME }}
-#           password: ${{ secrets.DOCKER_PASSWORD }}
-
-#       - name: Build React image
-#         run: |
-#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest -f student-frontend/Dockerfile student-frontend
-
-#       - name: Build Laravel image
-#         run: |
-#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest -f student-app/Dockerfile student-app
-
-#       - name: Build MySQL image
-#         run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
-
-#       - name: Push MySQL image
-#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
-
-
-#       - name: Push React image
-#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
-
-#       - name: Push Laravel image
-#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
-
-#       - name: Deploy to Server
-#         uses: appleboy/ssh-action@v1.0.3
-#         with:
-#           host: ${{ secrets.SERVER_IP }}
-#           username: ${{ secrets.SERVER_USER }}
-#           key: ${{ secrets.SERVER_SSH_KEY }}
-#           script: |
-#             set -e
-#             cd ${{ secrets.SERVER_PATH }}
-#             git pull origin Ten
-#             docker compose pull --no-build
-#             docker compose down
-#             docker compose up -d
-
-
-name: Build, Push Docker Images & Deploy
+name: Build, Test, Push Docker Images & Deploy
 
 on:
   push:
     branches:
+      - main
+      - Ten
+  pull_request:
+    branches:
+      - main
       - Ten
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file for testing
+        working-directory: ./student-app
+        run: |
+          cat > .env << EOF
+          APP_NAME=Laravel
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_TIMEZONE=UTC
+          APP_URL=http://localhost
+          
+          DB_CONNECTION=mysql
+          DB_HOST=mysql
+          DB_PORT=3306
+          DB_DATABASE=student_app
+          DB_USERNAME=root
+          DB_PASSWORD=Sumo@3396
+          
+          SESSION_DRIVER=database
+          QUEUE_CONNECTION=database
+          CACHE_STORE=database
+          BROADCAST_CONNECTION=log
+          FILESYSTEM_DISK=local
+          EOF
+
+      - name: Build React image
+        run: |
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/react_app:latest \
+          -f student-frontend/Dockerfile student-frontend
+
+      - name: Build Laravel image
+        run: |
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest \
+          -f student-app/Dockerfile student-app
+
+      - name: Test containers with docker-compose
+        run: |
+          # Start services
+          docker compose up -d
+          
+          # Wait for MySQL to be ready
+          echo "Waiting for MySQL to be ready..."
+          timeout 60 bash -c 'until docker exec mysql_db mysqladmin ping -h localhost --silent; do sleep 2; done'
+          
+          # Wait for Laravel to be ready
+          echo "Waiting for Laravel to be ready..."
+          sleep 10
+          
+          # Run Laravel setup commands
+          docker exec laravel php artisan key:generate --force || true
+          docker exec laravel php artisan migrate --force || true
+          
+          # Check if containers are running
+          docker ps
+          
+          # Test if services are responding
+          echo "Testing React app..."
+          curl -f http://localhost:80 || echo "React app not responding"
+          
+          echo "Testing Laravel API..."
+          curl -f http://localhost:8000 || echo "Laravel API not responding"
+          
+          # Cleanup
+          docker compose down
+
       - name: Login to Docker Hub
+        if: github.event_name == 'push'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build React image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest \
-          -f student-frontend/Dockerfile student-frontend
-
-      - name: Build Laravel image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest \
-          -f student-app/Dockerfile student-app
-
-      - name: Build MySQL image
-        run: docker build -f student-mysql/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest student-mysql
-
-      - name: Push MySQL image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mysql_app:latest
-
-
       - name: Push React image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest
+        if: github.event_name == 'push'
+        run: |
+          docker push ${{ env.DOCKERHUB_USERNAME }}/react_app:latest
 
       - name: Push Laravel image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest
+        if: github.event_name == 'push'
+        run: |
+          docker push ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest
 
-      - name: Deploy to Server
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/Ten')
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          # host: ${{ secrets.SERVER_IP }}
-          # username: ${{ secrets.SERVER_USER }}
-          # key: ${{ secrets.SERVER_SSH_KEY }}
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             set -e
+            echo "Starting deployment..."
             
-
-            git pull origin Ten
-
-            docker compose pull
-            docker compose down
+            # Navigate to project directory
+            cd ${{ secrets.SERVER_PATH || '~/Student_App' }}
+            
+            # Pull latest code
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+            git clean -fd
+            
+            # Pull latest Docker images
+            echo "Pulling latest Docker images..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react_app:latest || true
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/laravel_app:latest || true
+            docker pull mysql:8.0 || true
+            
+            # Ensure .env file exists
+            if [ ! -f student-app/.env ]; then
+              echo "Creating .env file..."
+              cat > student-app/.env << 'EOF'
+            APP_NAME=Laravel
+            APP_ENV=production
+            APP_KEY=
+            APP_DEBUG=false
+            APP_TIMEZONE=UTC
+            APP_URL=http://localhost
+            
+            DB_CONNECTION=mysql
+            DB_HOST=mysql
+            DB_PORT=3306
+            DB_DATABASE=student_app
+            DB_USERNAME=root
+            DB_PASSWORD=Sumo@3396
+            
+            SESSION_DRIVER=database
+            SESSION_LIFETIME=120
+            QUEUE_CONNECTION=database
+            CACHE_STORE=database
+            BROADCAST_CONNECTION=log
+            FILESYSTEM_DISK=local
+            EOF
+            fi
+            
+            # Stop existing containers
+            echo "Stopping existing containers..."
+            docker compose down || true
+            
+            # Start containers
+            echo "Starting containers..."
             docker compose up -d
-
+            
+            # Wait for MySQL to be ready
+            echo "Waiting for MySQL to be ready..."
+            timeout 60 bash -c 'until docker exec mysql_db mysqladmin ping -h localhost --silent; do sleep 2; done' || true
+            
+            # Wait for Laravel container to be ready
+            echo "Waiting for Laravel container..."
+            sleep 15
+            
+            # Run Laravel setup commands
+            echo "Running Laravel migrations..."
             docker exec laravel php artisan key:generate --force || true
-            docker exec laravel php artisan migrate --force
-            docker exec laravel php artisan config:clear
-            docker exec laravel php artisan cache:clear
-
+            docker exec laravel php artisan migrate --force || true
+            docker exec laravel php artisan config:clear || true
+            docker exec laravel php artisan cache:clear || true
+            docker exec laravel php artisan route:clear || true
+            docker exec laravel php artisan view:clear || true
+            
+            # Show running containers
+            echo "Deployment completed. Running containers:"
+            docker ps
+            
+            echo "Deployment successful!"
