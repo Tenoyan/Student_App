@@ -454,11 +454,7 @@ jobs:
           # Docker Compose Project Name
           Write-Host "=== Docker Compose Project Name ==="
           Write-Host "Project/Stack Name: first-application"
-          try {
-              docker compose -p first-application config --name -ErrorAction SilentlyContinue
-          } catch {
-              Write-Host "Using explicit project name: first-application"
-          }
+          Write-Host "Using explicit project name: first-application"
 
           Write-Host ""
           Write-Host "=== Final Container Status (Stack: first-application) ==="
@@ -467,10 +463,10 @@ jobs:
           Write-Host ""
           Write-Host "=== Network Information (first-application_app-network) ==="
           try {
-              $networkInfo = docker network inspect first-application_app-network -ErrorAction SilentlyContinue | Select-String "Containers" -Context 0,20
+              $networkInfo = docker network inspect first-application_app-network | Out-String
               Write-Host $networkInfo
           } catch {
-              Write-Host "Checking all networks..."
+              Write-Host "Network not found. Listing all networks..."
               docker network ls | Select-String "first-application"
           }
 
@@ -484,14 +480,16 @@ jobs:
           Write-Host "=== Verifying Stack Name in Container Labels ==="
           foreach ($container in @("laravels","sql_db","reacts")) {
               try {
-                  docker inspect $container -ErrorAction SilentlyContinue | Select-String "com.docker.compose.project"
+                  $labels = docker inspect $container | Out-String
+                  Write-Host $labels | Select-String "com.docker.compose.project"
               } catch {
-                  Write-Host "Checking container labels for $container..."
+                  Write-Host "Cannot inspect container $container"
               }
           }
 
           Write-Host ""
           Write-Host "✓✓✓ CONFIRMED: All containers are running in stack 'first-application' ✓✓✓"
+
 
 
       # Cleanup step removed - containers will remain running during CI/CD execution
