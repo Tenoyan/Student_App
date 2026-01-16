@@ -60,6 +60,11 @@ jobs:
           docker build -t ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest \
           -f student-app/Dockerfile student-app
 
+      - name: Build MySQL image
+        run: |
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest \
+          -f student-mysql/Dockerfile student-mysql
+
       - name: Run containers with docker-compose
         run: |
           echo "Starting all containers..."
@@ -164,6 +169,12 @@ jobs:
         run: |
           docker push ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest
           echo "Laravel image pushed successfully"
+
+      - name: Push MySQL image to Docker Hub
+        if: github.event_name == 'push'
+        run: |
+          docker push ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest
+          echo "MySQL image pushed successfully"
 
       - name: Cleanup containers
         if: always()
