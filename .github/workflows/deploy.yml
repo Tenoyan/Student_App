@@ -240,12 +240,20 @@ jobs:
           FILESYSTEM_DISK=local
           "@
 
+      # - name: Build React image
+      #   run: |
+      #     docker build -t ${{ env.DOCKERHUB_USERNAME }}/react_app:latest \
+      #     -f student-frontend/Dockerfile student-frontend
+      #     # Tag with the name docker-compose.yml expects
+      #     docker tag ${{ env.DOCKERHUB_USERNAME }}/react_app:latest nktenoyan/react_app:latest
+
       - name: Build React image
+        working-directory: ${{ github.workspace }}
+        shell: powershell
         run: |
-          docker build -t ${{ env.DOCKERHUB_USERNAME }}/react_app:latest \
-          -f student-frontend/Dockerfile student-frontend
-          # Tag with the name docker-compose.yml expects
-          docker tag ${{ env.DOCKERHUB_USERNAME }}/react_app:latest nktenoyan/react_app:latest
+          docker build -t $env:DOCKERHUB_USERNAME/react_app:latest -f .\student-frontend\Dockerfile .\student-frontend
+          docker tag $env:DOCKERHUB_USERNAME/react_app:latest $env:DOCKERHUB_USERNAME/react_app:latest
+
 
       - name: Build Laravel image
         run: |
