@@ -434,7 +434,7 @@ jobs:
       - name: Push MySQL image to Docker Hub
         if: github.event_name == 'push'
         run: |
-          docker push ${{ env.DOCKERHUB_USERNAME }}/sql_app:latest
+          docker push ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest
           echo "MySQL image pushed successfully"
 
       - name: Keep containers running for verification
