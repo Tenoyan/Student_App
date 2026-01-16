@@ -215,9 +215,10 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Create .env file for testing
-        working-directory: ./student-app
-        shell: bash
+        # working-directory: ./student-app
+        shell: wsl
         run: |
+          cd /mnt/c/Users/nimal/Documents/GitHub/Student_App/student-app
           cat > .env << EOF
           APP_NAME=Laravel
           APP_ENV=testing
