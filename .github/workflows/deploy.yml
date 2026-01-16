@@ -76,16 +76,35 @@ jobs:
           echo "Starting all containers with stack name 'first-application'..."
           echo "Verifying images are available..."
           docker images | grep -E "(react_app|laravel_app|mysql_app)" || true
-          docker compose -p first-application up -d
+          
+          # Start containers with explicit stack name
+          echo "Running: docker compose -p first-application up -d"
+          docker compose -p first-application up -d || {
+            echo "Failed to start containers"
+            docker compose -p first-application logs
+            exit 1
+          }
+          
+          # Wait a moment for containers to initialize
+          sleep 5
           
           # Show container status
           echo "Container status:"
           docker ps -a
           
-          # Verify stack name
+          # Verify stack name and show running containers
           echo "Verifying stack name 'first-application'..."
           docker compose -p first-application ps
           echo "Stack name verified: first-application"
+          
+          # Verify containers are actually running
+          if ! docker ps | grep -q "mysql_db\|laravel\|react"; then
+            echo "ERROR: Containers are not running!"
+            docker compose -p first-application ps
+            docker compose -p first-application logs
+            exit 1
+          fi
+          echo "✓ All containers are running"
           
           # Wait for MySQL to be ready
           echo "Waiting for MySQL to be ready..."
@@ -190,6 +209,20 @@ jobs:
         run: |
           docker push ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest
           echo "MySQL image pushed successfully"
+
+      - name: Keep containers running for verification
+        run: |
+          echo "Containers are running. Showing final status..."
+          echo "=== Final Container Status ==="
+          docker compose -p first-application ps
+          echo ""
+          echo "=== Container Logs Summary ==="
+          docker compose -p first-application logs --tail 10
+          echo ""
+          echo "=== Network Information ==="
+          docker network inspect first-application_app-network 2>/dev/null || echo "Network not found"
+          echo ""
+          echo "✓ All containers are running in stack 'first-application'"
 
       - name: Cleanup containers
         if: always()
