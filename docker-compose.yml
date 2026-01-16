@@ -34,22 +34,85 @@
 #     volumes:
 #       - ./mysql/data:/var/lib/mysql
 
+
+#
+#
+#
+#
+#
+
+
+# version: "3.8"
+
+# services:
+#   frontend:
+#     image: nktenoyan/react_app:latest
+#     container_name: react
+#     ports:
+#       - "80:80"
+#     depends_on:
+#       - backend
+#     networks:
+#       - app-network
+
+#   backend:
+#     image: nktenoyan/laravel_app:latest
+#     container_name: laravel
+#     restart: always
+#     env_file:
+#       - ./student-app/.env
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - mysql
+#     networks:
+#       - app-network
+
+#   mysql:
+#     image: mysql:8.0
+#     container_name: mysql
+#     restart: always
+#     environment:
+#       MYSQL_DATABASE: student_app
+#       MYSQL_ROOT_PASSWORD: Sumo@3396
+#     ports:
+#       - "3307:3306"
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+#     networks:
+#       - app-network
+
+# volumes:
+#   mysql_data:
+
+# networks:
+#   app-network:
+#     driver: bridge
+
+
 version: "3.8"
 
 services:
-  frontend:
-    image: nktenoyan/react_app:latest
-    container_name: react
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: student_app
+      MYSQL_USER: student_user
+      MYSQL_PASSWORD: student_pass
+      MYSQL_ROOT_PASSWORD: root_pass
     ports:
-      - "80:80"
-    depends_on:
-      - backend
+      - "3307:3306"   # host:container
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
       - app-network
 
   backend:
     image: nktenoyan/laravel_app:latest
     container_name: laravel
+    restart: always
     env_file:
       - ./student-app/.env
     ports:
@@ -58,17 +121,16 @@ services:
       - mysql
     networks:
       - app-network
+    command: sh -c "php artisan migrate --force || true && php artisan serve --host=0.0.0.0 --port=8000"
 
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
-    environment:
-      MYSQL_DATABASE: student_app
-      MYSQL_ROOT_PASSWORD: Sumo@3396
+  frontend:
+    image: nktenoyan/react_app:latest
+    container_name: react
+    restart: always
     ports:
-      - "3307:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
+      - "80:80"
+    depends_on:
+      - backend
     networks:
       - app-network
 
