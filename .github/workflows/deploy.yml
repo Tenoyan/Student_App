@@ -270,7 +270,8 @@ jobs:
           echo ""
           echo "✓✓✓ CONFIRMED: All containers are running in stack 'first-application' ✓✓✓"
 
-      # Cleanup step removed - containers will remain running
+      # Cleanup step removed - containers will remain running during CI/CD execution
+      # Containers run automatically with stack name "first-application" when you push code
       # - name: Cleanup containers
       #   if: always()
       #   run: |
