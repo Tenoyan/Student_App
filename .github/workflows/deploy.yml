@@ -71,19 +71,28 @@ jobs:
           # Tag with the name docker-compose.yml expects
           docker tag ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest nktenoyan/mysql_app:latest
 
-      - name: Run containers with docker-compose stack first-application
+      - name: Run containers automatically with docker-compose stack first-application
         run: |
-          echo "Starting all containers with stack name 'first-application'..."
+          echo "=========================================="
+          echo "AUTOMATIC CONTAINER STARTUP - CI/CD Pipeline"
+          echo "Stack Name: first-application"
+          echo "Running on: GitHub Actions Runner (Ubuntu)"
+          echo "=========================================="
+          echo ""
           echo "Verifying images are available..."
           docker images | grep -E "(react_app|laravel_app|mysql_app)" || true
           
-          # Start containers with explicit stack name
-          echo "Running: docker compose -p first-application up -d"
+          # Start containers automatically with explicit stack name
+          echo ""
+          echo "Starting containers AUTOMATICALLY..."
+          echo "Command: docker compose -p first-application up -d"
           docker compose -p first-application up -d || {
-            echo "Failed to start containers"
+            echo "Failed to start containers automatically"
             docker compose -p first-application logs
             exit 1
           }
+          echo ""
+          echo "✓ Containers started AUTOMATICALLY in CI/CD pipeline"
           
           # Wait a moment for containers to initialize
           sleep 5
