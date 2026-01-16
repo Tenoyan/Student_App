@@ -54,25 +54,38 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKERHUB_USERNAME }}/react_app:latest \
           -f student-frontend/Dockerfile student-frontend
+          # Tag with the name docker-compose.yml expects
+          docker tag ${{ env.DOCKERHUB_USERNAME }}/react_app:latest nktenoyan/react_app:latest
 
       - name: Build Laravel image
         run: |
           docker build -t ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest \
           -f student-app/Dockerfile student-app
+          # Tag with the name docker-compose.yml expects
+          docker tag ${{ env.DOCKERHUB_USERNAME }}/laravel_app:latest nktenoyan/laravel_app:latest
 
       - name: Build MySQL image
         run: |
           docker build -t ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest \
           -f student-mysql/Dockerfile student-mysql
+          # Tag with the name docker-compose.yml expects
+          docker tag ${{ env.DOCKERHUB_USERNAME }}/mysql_app:latest nktenoyan/mysql_app:latest
 
       - name: Run containers with docker-compose stack first-application
         run: |
           echo "Starting all containers with stack name 'first-application'..."
+          echo "Verifying images are available..."
+          docker images | grep -E "(react_app|laravel_app|mysql_app)" || true
           docker compose -p first-application up -d
           
           # Show container status
           echo "Container status:"
           docker ps -a
+          
+          # Verify stack name
+          echo "Verifying stack name 'first-application'..."
+          docker compose -p first-application ps
+          echo "Stack name verified: first-application"
           
           # Wait for MySQL to be ready
           echo "Waiting for MySQL to be ready..."
