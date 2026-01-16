@@ -42,6 +42,7 @@
 #
 
 
+name: my-application
 services:
   frontend:
     image: nktenoyan/react_app:latest
