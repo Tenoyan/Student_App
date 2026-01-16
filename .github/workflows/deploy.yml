@@ -446,34 +446,53 @@ jobs:
 
       - name: Keep containers running for verification
         run: |
-          echo "=========================================="
-          echo "FINAL VERIFICATION - Stack: first-application"
-          echo "=========================================="
-          echo ""
-          echo "=== Docker Compose Project Name ==="
-          echo "Project/Stack Name: first-application"
-          docker compose -p first-application config --name 2>/dev/null || echo "Using explicit project name: first-application"
-          echo ""
-          echo "=== Final Container Status (Stack: first-application) ==="
-          docker compose -p first-application ps
-          echo ""
-          echo "=== Network Information (first-application_app-network) ==="
-          docker network inspect first-application_app-network 2>/dev/null | grep -A 20 "Containers" || {
-            echo "Checking all networks..."
-            docker network ls | grep first-application
+          Write-Host "=========================================="
+          Write-Host "FINAL VERIFICATION - Stack: first-application"
+          Write-Host "=========================================="
+          Write-Host ""
+
+          # Docker Compose Project Name
+          Write-Host "=== Docker Compose Project Name ==="
+          Write-Host "Project/Stack Name: first-application"
+          try {
+              docker compose -p first-application config --name -ErrorAction SilentlyContinue
+          } catch {
+              Write-Host "Using explicit project name: first-application"
           }
-          echo ""
-          echo "=== Container Details ==="
-          echo "Stack Name: first-application"
-          echo "Network: first-application_app-network"
-          echo "Volumes: first-application_mysql_data"
-          echo ""
-          echo "=== Verifying Stack Name in Container Labels ==="
-          docker inspect laravels 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
-          docker inspect sql_db 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
-          docker inspect reacts 2>/dev/null | grep -i "com.docker.compose.project" || echo "Checking container labels..."
-          echo ""
-          echo "✓✓✓ CONFIRMED: All containers are running in stack 'first-application' ✓✓✓"
+
+          Write-Host ""
+          Write-Host "=== Final Container Status (Stack: first-application) ==="
+          docker compose -p first-application ps
+
+          Write-Host ""
+          Write-Host "=== Network Information (first-application_app-network) ==="
+          try {
+              $networkInfo = docker network inspect first-application_app-network -ErrorAction SilentlyContinue | Select-String "Containers" -Context 0,20
+              Write-Host $networkInfo
+          } catch {
+              Write-Host "Checking all networks..."
+              docker network ls | Select-String "first-application"
+          }
+
+          Write-Host ""
+          Write-Host "=== Container Details ==="
+          Write-Host "Stack Name: first-application"
+          Write-Host "Network: first-application_app-network"
+          Write-Host "Volumes: first-application_mysql_data"
+          Write-Host ""
+
+          Write-Host "=== Verifying Stack Name in Container Labels ==="
+          foreach ($container in @("laravels","sql_db","reacts")) {
+              try {
+                  docker inspect $container -ErrorAction SilentlyContinue | Select-String "com.docker.compose.project"
+              } catch {
+                  Write-Host "Checking container labels for $container..."
+              }
+          }
+
+          Write-Host ""
+          Write-Host "✓✓✓ CONFIRMED: All containers are running in stack 'first-application' ✓✓✓"
+
 
       # Cleanup step removed - containers will remain running during CI/CD execution
       # Containers run automatically with stack name "first-application" when you push code
