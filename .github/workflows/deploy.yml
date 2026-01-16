@@ -384,25 +384,25 @@ jobs:
           # Check MySQL health
           try {
               docker exec sql_db mysqladmin ping -h localhost --silent | Out-Null
-              Write-Host "✓ MySQL is healthy"
+              Write-Host "MySQL is healthy"
           } catch {
-              Write-Host "✗ MySQL health check failed"
+              Write-Host "MySQL health check failed"
           }
 
           # Check Laravel container
           try {
               docker exec laravels php artisan --version | Out-Null
-              Write-Host "✓ Laravel is working"
+              Write-Host "Laravel is working"
           } catch {
-              Write-Host "✗ Laravel check failed"
+              Write-Host "Laravel check failed"
           }
 
           # Check if Laravel can query database
           try {
-              $command = 'try { DB::table("users")->count(); Write-Host "✓ Database query successful" } catch (Exception $e) { Write-Host "✗ Database query failed: $($e.Message)" }'
-              docker exec laravels php artisan tinker --execute="$command"
+              $phpCommand = 'try { echo DB::table("users")->count() . "\nDatabase query: OK"; } catch (Exception $e) { echo "Database query: FAIL"; }'
+              docker exec laravels php artisan tinker --execute="$phpCommand"
           } catch {
-              Write-Host "✗ Database query execution failed"
+              Write-Host "Database query execution failed"
           }
 
 
