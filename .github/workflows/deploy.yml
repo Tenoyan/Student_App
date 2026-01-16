@@ -306,13 +306,12 @@ jobs:
               exit 1
           }
 
-          # Wait for containers to initialize
           Start-Sleep -Seconds 5
 
           # Show container status
           docker ps -a
 
-          # Wait for MySQL to be ready
+          # Wait for MySQL
           Write-Host "Waiting for MySQL..."
           $maxRetries = 60
           $retry = 0
@@ -349,16 +348,16 @@ jobs:
 
           # Test database connection
           try {
-              docker exec laravels php artisan tinker --execute='DB::connection()->getPdo(); echo "Database connection successful!";'
+              docker exec laravels php artisan tinker --execute='DB::connection()->getPdo(); Write-Host "Database connection successful!"'
           } catch {
               Write-Host "Database connection test failed"
               exit 1
           }
 
-          # Test if services are responding
+          # Test services
           Start-Sleep -Seconds 5
           try {
-              $reactResponse = Invoke-WebRequest -Uri "http://localhost:80" -UseBasicParsing
+              $reactResponse = Invoke-WebRequest -Uri 'http://localhost:80' -UseBasicParsing
               Write-Host ("React app status: " + $reactResponse.StatusCode)
           } catch {
               Write-Host "React app not responding"
@@ -366,7 +365,7 @@ jobs:
 
           Start-Sleep -Seconds 5
           try {
-              $laravelResponse = Invoke-WebRequest -Uri "http://localhost:8000" -UseBasicParsing
+              $laravelResponse = Invoke-WebRequest -Uri 'http://localhost:8000' -UseBasicParsing
               Write-Host ("Laravel API status: " + $laravelResponse.StatusCode)
           } catch {
               Write-Host "Laravel API not responding"
@@ -374,7 +373,8 @@ jobs:
 
           # Final container status
           docker ps
-          Write-Host "All containers are running successfully in stack 'first-application'!"
+          Write-Host 'All containers are running successfully in stack first-application!'
+
 
 
       - name: Run container health checks
