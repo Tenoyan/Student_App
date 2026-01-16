@@ -287,130 +287,95 @@ jobs:
 
       - name: Run containers automatically with docker-compose stack first-application
         run: |
-          echo "=========================================="
-          echo "AUTOMATIC CONTAINER STARTUP - CI/CD Pipeline"
-          echo "Stack Name: first-application"
-          echo "Running on: GitHub Actions Runner (Ubuntu)"
-          echo "=========================================="
-          echo ""
-          echo "Verifying images are available..."
-          docker images | grep -E "(react_app|laravel_app|mysql_app)" || true
-          
-          # Start containers automatically with explicit stack name
-          echo ""
-          echo "Starting containers AUTOMATICALLY..."
-          echo "Command: docker compose -p first-application up -d"
-          docker compose -p first-application up -d || {
-            echo "Failed to start containers automatically"
-            docker compose -p first-application logs
-            exit 1
+          Write-Host "=========================================="
+          Write-Host "AUTOMATIC CONTAINER STARTUP - CI/CD Pipeline"
+          Write-Host "Stack Name: first-application"
+
+          # Verify images
+          Write-Host "Verifying images..."
+          docker images | Select-String "react_app|laravel_app|mysql_app"
+
+          # Start containers
+          Write-Host "Starting containers..."
+          try {
+              docker compose -p first-application up -d
+              Write-Host "✓ Containers started successfully"
+          } catch {
+              Write-Host "Failed to start containers"
+              docker compose -p first-application logs
+              exit 1
           }
-          echo ""
-          echo "✓ Containers started AUTOMATICALLY in CI/CD pipeline"
-          
-          # Wait a moment for containers to initialize
-          sleep 5
-          
+
+          # Wait for containers to initialize
+          Start-Sleep -Seconds 5
+
           # Show container status
-          echo "Container status:"
           docker ps -a
-          
-          # Verify stack name and show running containers
-          echo "=========================================="
-          echo "STACK NAME VERIFICATION: first-application"
-          echo "=========================================="
-          echo ""
-          echo "Project/Stack Name: first-application"
-          echo ""
-          echo "=== Containers in Stack 'first-application' ==="
-          docker compose -p first-application ps
-          echo ""
-          echo "=== Verifying Network (first-application_app-network) ==="
-          docker network ls | grep first-application
-          echo ""
-          echo "=== Network Details ==="
-          docker network inspect first-application_app-network 2>/dev/null | grep -E '"Name"|"IPv4Address"' | head -10
-          echo ""
-          echo "=== Container Labels (Project Name) ==="
-          echo "Laravel container project label:"
-          docker inspect laravels 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
-          echo "MySQL container project label:"
-          docker inspect sql_db 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
-          echo "React container project label:"
-          docker inspect reacts 2>/dev/null | grep '"com.docker.compose.project"' || echo "  Project: first-application (from -p flag)"
-          echo ""
-          echo "=== Docker Compose Projects ==="
-          docker compose ls 2>/dev/null || echo "Listing compose projects..."
-          echo ""
-          echo "=========================================="
-          echo "✓✓✓ STACK NAME CONFIRMED: first-application ✓✓✓"
-          echo "✓ Network: first-application_app-network"
-          echo "✓ Volumes: first-application_*"
-          echo "✓ All containers running with stack name: first-application"
-          echo "=========================================="
-          
-          # Verify containers are actually running
-          if ! docker ps | grep -q "sql_db\|laravel\|react"; then
-            echo "ERROR: Containers are not running!"
-            docker compose -p first-application ps
-            docker compose -p first-application logs
-            exit 1
-          fi
-          echo "✓ All containers are running"
-          
+
           # Wait for MySQL to be ready
-          echo "Waiting for MySQL to be ready..."
-          timeout 120 bash -c 'until docker exec sql_db mysqladmin ping -h localhost --silent; do sleep 2; done' || {
-            echo "MySQL failed to start"
-            docker logs sql_db
-            exit 1
+          Write-Host "Waiting for MySQL..."
+          $maxRetries = 60
+          $retry = 0
+          while ($retry -lt $maxRetries) {
+              try {
+                  docker exec sql_db mysqladmin ping -h localhost | Out-Null
+                  Write-Host "MySQL is ready!"
+                  break
+              } catch {
+                  Start-Sleep -Seconds 2
+                  $retry++
+                  if ($retry -eq $maxRetries) {
+                      Write-Host "MySQL failed to start"
+                      docker logs sql_db
+                      exit 1
+                  }
+              }
           }
-          echo "MySQL is ready!"
-          
-          # Wait for Laravel container to be ready
-          echo "Waiting for Laravel container to be ready..."
-          sleep 15
-          
-          # Check Laravel container logs
-          echo "Laravel container logs:"
-          docker logs laravels --tail 20
-          
-          # Run Laravel setup commands
-          echo "Running Laravels setup commands..."
-          docker exec laravels php artisan key:generate --force || true
-          docker exec laravels php artisan config:clear || true
-          docker exec laravels php artisan cache:clear || true
-          
+
+          # Laravel setup
+          docker exec laravels php artisan key:generate --force
+          docker exec laravels php artisan config:clear
+          docker exec laravels php artisan cache:clear
+
           # Run migrations
-          echo "Running database migrations..."
-          docker exec laravels php artisan migrate --force || {
-            echo "Migration failed"
-            docker logs laravel --tail 50
-            exit 1
+          try {
+              docker exec laravels php artisan migrate --force
+              Write-Host "Migrations completed successfully!"
+          } catch {
+              Write-Host "Migration failed"
+              docker logs laravels
+              exit 1
           }
-          echo "Migrations completed successfully!"
-          
+
           # Test database connection
-          echo "Testing database connection..."
-          docker exec laravels php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection successful!';" || {
-            echo "Database connection test failed"
-            exit 1
+          try {
+              docker exec laravels php artisan tinker --execute="DB::connection()->getPdo(); Write-Host 'Database connection successful!';"
+          } catch {
+              Write-Host "Database connection test failed"
+              exit 1
           }
-          
+
           # Test if services are responding
-          echo "Testing React app..."
-          sleep 5
-          curl -f http://localhost:80 -o /dev/null -s -w "React app status: %{http_code}\n" || echo "React app not responding"
-          
-          echo "Testing Laravel API..."
-          sleep 5
-          curl -f http://localhost:8000 -o /dev/null -s -w "Laravel API status: %{http_code}\n" || echo "Laravel API not responding"
-          
-          # Show final container status
-          echo "Final container status:"
+          Start-Sleep -Seconds 5
+          try {
+              $reactResponse = Invoke-WebRequest -Uri "http://localhost:80" -UseBasicParsing
+              Write-Host "React app status: $($reactResponse.StatusCode)"
+          } catch {
+              Write-Host "React app not responding"
+          }
+
+          Start-Sleep -Seconds 5
+          try {
+              $laravelResponse = Invoke-WebRequest -Uri "http://localhost:8000" -UseBasicParsing
+              Write-Host "Laravel API status: $($laravelResponse.StatusCode)"
+          } catch {
+              Write-Host "Laravel API not responding"
+          }
+
+          # Final container status
           docker ps
-          
-          echo "All containers are running successfully in stack 'first-application'!"
+          Write-Host "All containers are running successfully in stack 'first-application'!"
+
 
       - name: Run container health checks
         run: |
