@@ -218,7 +218,6 @@ jobs:
         working-directory: ./student-app
         shell: bash
         run: |
-          # Set-Content -Path ".\.env" -Value @"
           cat > .env << EOF
           APP_NAME=Laravel
           APP_ENV=testing
@@ -239,7 +238,6 @@ jobs:
           CACHE_STORE=database
           BROADCAST_CONNECTION=log
           FILESYSTEM_DISK=local
-          # "@
           EOF
 
       - name: Build React image
